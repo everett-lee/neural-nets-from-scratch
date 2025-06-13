@@ -1,0 +1,2 @@
+class OutputUnsetException(Exception):
+    pass
