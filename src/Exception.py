@@ -1,2 +1,2 @@
-class OutputUnsetException(Exception):
+class UnsetException(Exception):
     pass

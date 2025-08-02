@@ -2,34 +2,61 @@ from Activation import ReLU, SoftMax
 from Layer import LayerDense
 import nnfs
 from nnfs.datasets import spiral_data
+from Classifier import SoftmaxLossCategoricalCrossEntropy
+import numpy as np
+from Optimiser import SGD
 
 nnfs.init()
 
 # Create dataset
 X, y = spiral_data(samples=100, classes=3)
 # Create Dense layer with 2 input features and 3 output values
-dense1 = LayerDense(2, 3)
+dense_1 = LayerDense(2, 64)
 
 # Create ReLU activation (to be used with Dense layer):
-activation1 = ReLU()
+activation_1 = ReLU()
 
 # Create second Dense layer with 3 input features (as we take output
 # of previous layer here) and 3 output values
-dense2 = LayerDense(3, 3)
+dense_2 = LayerDense(64, 3)
+
+activation_2 = SoftMax()
+
+loss_activation = SoftmaxLossCategoricalCrossEntropy()
+
+optimiser = SGD(learning_rate=1.0, decay=1e-3, momentum_factor=0.9)
+layers = [dense_1, dense_2]
+
+for epoch in range(10001):
+    dense_1.forward(X)
+    activation_1.forward(dense_1.get_output())
+    dense_2.forward(activation_1.get_output())
+    loss = loss_activation.forward(dense_2.get_output(), y)
+
+    predictions = np.argmax(loss_activation.get_output(), axis=1)
+    if len(y.shape) == 2:
+        y = np.argmax(y, axis=1)
+    accuracy = np.mean(predictions==y)
+
+    if epoch % 100 == 0:
+        print(f"epoch: {epoch}, " +
+              f"acc: {accuracy:.3f}, " +
+              f"loss: {loss:.3f}, " +
+              f"lr: {optimiser.current_learning_rate}")
 
 
-activation2 = SoftMax()
+    # Backward pass
+    loss_activation.backward(loss_activation.get_output(), y)
+    dense_2.backward(loss_activation.get_d_inputs())
+    activation_1.backward(dense_2.get_d_inputs())
+    dense_1.backward(activation_1.get_d_inputs())
 
-# Make a forward pass of our training data through this layer
-dense1.forward(X)
+    # print("***")
+    # print("Gradients:")
+    # print("dense_1 d_weights: ", dense_1.get_d_weights())
+    # print("dense_1 d_biases: ",dense_1.get_d_biases())
+    # print("dense_2 d_weights: ",dense_2.get_d_weights())
+    # print("dense_2 d_biases: ",dense_2.get_d_biases())
 
-# Forward pass through activation func.
-# Takes in output from previous layer
-activation1.forward(dense1.get_output())
+    optimiser.handle_param_updates(layers)
 
-dense2.forward(activation1.get_output())
-
-activation2.forward(dense2.get_output())
-
-print(dense2.get_output()[:5])
-print(activation2.get_output()[:5])
