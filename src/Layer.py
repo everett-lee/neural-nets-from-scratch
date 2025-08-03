@@ -15,6 +15,8 @@ class Layer:
         self.d_inputs = None
         self.weight_momentums = None
         self.bias_momentums = None
+        self.weight_cache = None
+        self.bias_cache = None
 
     def get_output(self) -> np.array:
         if self.output is None:
@@ -61,6 +63,16 @@ class Layer:
             self.bias_momentums = np.zeros_like(self.get_biases())
         return self.bias_momentums
 
+    def get_weight_cache(self) -> np.array:
+        if self.weight_cache is None:
+            self.weight_cache = np.zeros_like(self.get_weights())
+        return self.weight_cache
+
+    def get_bias_cache(self) -> np.array:
+        if self.bias_cache is None:
+            self.bias_cache = np.zeros_like(self.get_biases())
+        return self.bias_cache
+
     def set_weights(self, new_weights: np.array) -> None:
         self.weights = new_weights
 
@@ -73,6 +85,11 @@ class Layer:
     def set_bias_momentums(self, new_bias_momentums: np.array) -> None:
         self.bias_momentums = new_bias_momentums
 
+    def set_weight_cache(self, new_weight_cache: np.array) -> None:
+        self.weight_cache = new_weight_cache
+
+    def set_bias_cache(self, new_bias_cache: np.array) -> None:
+        self.bias_cache = new_bias_cache
 
 class LayerDense(Layer):
     def __init__(self, n_inputs: int, n_neurons: int):

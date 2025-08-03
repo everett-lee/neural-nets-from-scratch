@@ -4,7 +4,7 @@ import nnfs
 from nnfs.datasets import spiral_data
 from Classifier import SoftmaxLossCategoricalCrossEntropy
 import numpy as np
-from Optimiser import SGD
+from Optimiser import SGD, Adam
 
 nnfs.init()
 
@@ -24,7 +24,7 @@ activation_2 = SoftMax()
 
 loss_activation = SoftmaxLossCategoricalCrossEntropy()
 
-optimiser = SGD(learning_rate=1.0, decay=1e-3, momentum_factor=0.9)
+optimiser = Adam(learning_rate=0.02, decay=1e-5)
 layers = [dense_1, dense_2]
 
 for epoch in range(10001):
