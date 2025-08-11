@@ -1,6 +1,7 @@
 import numpy as np
 
 from Exception import UnsetException
+from Layer import Layer
 
 
 class LossBase:
@@ -30,6 +31,24 @@ class LossBase:
             raise UnsetException
 
         return self.d_inputs
+
+    def l2_regularisation_loss(self, layer: Layer) -> float:
+        regularisation_loss = 0
+
+        if layer.weight_regulizer_l2 > 0:
+            regularisation_loss += (
+                layer.weight_regulizer_l2 * np.sum(
+                layer.weights * layer.weights
+                )
+            )
+
+        if layer.bias_regulizer_l2 > 0:
+            regularisation_loss += (
+                layer.bias_regulizer_l2 * np.sum(
+                layer.biases * layer.biases
+                )
+            )
+        return regularisation_loss
 
 
 class CategoricalCrossEntropy(LossBase):

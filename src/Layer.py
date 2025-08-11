@@ -3,7 +3,7 @@ import numpy as np
 from Exception import UnsetException
 
 class Layer:
-    def __init__(self):
+    def __init__(self, weight_regulizer_l2: float = 0, bias_regulizer_l2: float = 0):
         self.output = None
 
         # batch of inputs with m inputs x n features
@@ -17,6 +17,8 @@ class Layer:
         self.bias_momentums = None
         self.weight_cache = None
         self.bias_cache = None
+        self.weight_regulizer_l2 = weight_regulizer_l2
+        self.bias_regulizer_l2 = bias_regulizer_l2
 
     def get_output(self) -> np.array:
         if self.output is None:
@@ -92,8 +94,13 @@ class Layer:
         self.bias_cache = new_bias_cache
 
 class LayerDense(Layer):
-    def __init__(self, n_inputs: int, n_neurons: int):
-        super().__init__()
+    def __init__(
+            self, n_inputs: int,
+            n_neurons: int,
+            weight_regulizer_l2: float = 0,
+            bias_regulizer_l2: float = 0
+    ):
+        super().__init__(weight_regulizer_l2, bias_regulizer_l2)
         self.weights = 0.01 * np.random.randn(n_inputs, n_neurons)
         self.biases  = np.zeros((1, n_neurons))
         self.output = None

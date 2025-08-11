@@ -11,7 +11,7 @@ nnfs.init()
 # Create dataset
 X, y = spiral_data(samples=100, classes=3)
 # Create Dense layer with 2 input features and 3 output values
-dense_1 = LayerDense(2, 64)
+dense_1 = LayerDense(2, 64, weight_regulizer_l2=5e-4, bias_regulizer_l2=5e-4)
 
 # Create ReLU activation (to be used with Dense layer):
 activation_1 = ReLU()
@@ -31,7 +31,15 @@ for epoch in range(10001):
     dense_1.forward(X)
     activation_1.forward(dense_1.get_output())
     dense_2.forward(activation_1.get_output())
-    loss = loss_activation.forward(dense_2.get_output(), y)
+
+    data_loss = loss_activation.forward(dense_2.get_output(), y)
+    # TODO helper?
+    regularisation_loss = (
+        loss_activation.loss.l2_regularisation_loss(dense_1) +
+        loss_activation.loss.l2_regularisation_loss(dense_2)
+    )
+    loss = data_loss + regularisation_loss
+
 
     predictions = np.argmax(loss_activation.get_output(), axis=1)
     if len(y.shape) == 2:
@@ -42,6 +50,8 @@ for epoch in range(10001):
         print(f"epoch: {epoch}, " +
               f"acc: {accuracy:.3f}, " +
               f"loss: {loss:.3f}, " +
+              f"data_loss: {data_loss:.3f}, " +
+              f'reg_loss: {regularisation_loss:.3f}), ' +
               f"lr: {optimiser.current_learning_rate}")
 
 
