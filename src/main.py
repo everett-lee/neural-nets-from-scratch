@@ -9,22 +9,22 @@ from Optimiser import SGD, Adam
 nnfs.init()
 
 # Create dataset
-X, y = spiral_data(samples=100, classes=3)
+X, y = spiral_data(samples=1000, classes=3)
 # Create Dense layer with 2 input features and 3 output values
-dense_1 = LayerDense(2, 64, weight_regulizer_l2=5e-4, bias_regulizer_l2=5e-4)
+dense_1 = LayerDense(2, 512, weight_regulizer_l2=5e-4, bias_regulizer_l2=5e-4)
 
 # Create ReLU activation (to be used with Dense layer):
 activation_1 = ReLU()
 
 # Create second Dense layer with 3 input features (as we take output
 # of previous layer here) and 3 output values
-dense_2 = LayerDense(64, 3)
+dense_2 = LayerDense(512, 3)
 
 activation_2 = SoftMax()
 
 loss_activation = SoftmaxLossCategoricalCrossEntropy()
 
-optimiser = Adam(learning_rate=0.02, decay=1e-5)
+optimiser = Adam(learning_rate=0.02, decay=5e-7)
 layers = [dense_1, dense_2]
 
 for epoch in range(10001):
@@ -40,7 +40,6 @@ for epoch in range(10001):
     )
     loss = data_loss + regularisation_loss
 
-
     predictions = np.argmax(loss_activation.get_output(), axis=1)
     if len(y.shape) == 2:
         y = np.argmax(y, axis=1)
@@ -52,7 +51,7 @@ for epoch in range(10001):
               f"loss: {loss:.3f}, " +
               f"data_loss: {data_loss:.3f}, " +
               f'reg_loss: {regularisation_loss:.3f}), ' +
-              f"lr: {optimiser.current_learning_rate}")
+              f"lr: {optimiser.current_learning_rate:.5f}")
 
 
     # Backward pass
@@ -61,12 +60,27 @@ for epoch in range(10001):
     activation_1.backward(dense_2.get_d_inputs())
     dense_1.backward(activation_1.get_d_inputs())
 
-    # print("***")
-    # print("Gradients:")
-    # print("dense_1 d_weights: ", dense_1.get_d_weights())
-    # print("dense_1 d_biases: ",dense_1.get_d_biases())
-    # print("dense_2 d_weights: ",dense_2.get_d_weights())
-    # print("dense_2 d_biases: ",dense_2.get_d_biases())
-
     optimiser.handle_param_updates(layers)
+
+# Validate the model
+# Create test dataset
+X_test, y_test = spiral_data(samples=100, classes=3)
+# Perform a forward pass of our testing data through this layer
+dense_1.forward(X_test)
+# Perform a forward pass through activation function
+# takes the output of first dense layer here
+activation_1.forward(dense_1.output)
+# Perform a forward pass through second Dense layer
+# takes outputs of activation function of first layer as inputs
+dense_2.forward(activation_1.output)
+# Perform a forward pass through the activation/loss function
+# takes the output of second dense layer here and returns loss
+loss = loss_activation.forward(dense_2.output, y_test)
+# Calculate accuracy from output of activation2 and targets
+# calculate values along first axis
+predictions = np.argmax(loss_activation.output, axis=1)
+if len(y_test.shape) == 2:
+    y_test = np.argmax(y_test, axis=1)
+accuracy = np.mean(predictions == y_test)
+print(f'validation, acc: {accuracy:.3f}, loss: {loss:.3f}')
 

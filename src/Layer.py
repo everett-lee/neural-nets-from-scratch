@@ -124,3 +124,11 @@ class LayerDense(Layer):
         # just sum incoming derivatives from next layer column-wise
         # note, result matches shape of biases vector, or 1 x n_features
         self.d_biases = np.sum(d_values, axis=0, keepdims=True)
+
+        # derivative of l2 weight regularisation is 2 * λ * weights
+        if self.weight_regulizer_l2 > 0:
+            self.d_weights += 2 * self.weight_regulizer_l2 * self.weights
+        # likewise for biases
+        if self.bias_regulizer_l2 > 0:
+            self.d_biases += 2 * self.bias_regulizer_l2 * self.biases
+
