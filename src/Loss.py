@@ -61,7 +61,7 @@ class CategoricalCrossEntropy(LossBase):
         """
         n_samples = len(y_predicted)
 
-        # Shift data to prevent division by 0
+        # Shift data to avoid log(0)
         # Clip both sides to not drag mean towards any value
         y_pred_clipped = np.clip(y_predicted, 1e-7, 1 - 1e-7)
 
